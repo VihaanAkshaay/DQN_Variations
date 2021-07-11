@@ -9,7 +9,7 @@ Output Layer - 2 nodes (Action Space)
 Optimizer - zero_grad()
 
 ### Network Update Frequency (YES)
-Frequency of network switch - Every 5 episodes
+Frequency of network switch - Every 10 episodes
 
 ###  Experience Replay (YES)
 Total Replay Buffer Size - 10,000
@@ -37,7 +37,7 @@ GAMMA = 0.99            # discount factor
 TAU = 1e-3              # for soft update of target parameters
 LR = 5e-4               # learning rate 
 ''' Property - Q Targets (+Q)'''
-UPDATE_EVERY = 5        # how often to update the network
+UPDATE_EVERY = 10        # how often to update the network
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 

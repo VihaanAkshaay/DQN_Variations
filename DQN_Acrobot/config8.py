@@ -1,22 +1,21 @@
 '''
-# Case 1- (+Q + E + T)
+# Case 8: (-Q -E -T)
 
 ### Neural Network 
-Input Layer - 4 nodes (State Shape) \
-Hidden Layer 1 - 64 nodes \
-Hidden Layer 2 - 64 nodes \
-Output Layer - 2 nodes (Action Space) \
+Input Layer - 4 nodes (State Shape)
+Hidden Layer 1 - 64 nodes
+Hidden Layer 2 - 64 nodes
+Output Layer - 2 nodes (Action Space)
 Optimizer - zero_grad()
 
-### Network Update Frequency (YES)
-Frequency of network switch - Every 5 episodes
+### Network Update Frequency (NO)
+Frequency of network switch - Every episode
 
-###  Experience Replay (YES)
-Total Replay Buffer Size - 10,000
-Mini Batch Size - 64
+###  Experience Replay (NO)
+No Experience Replay / Experience Replay of Size 1
 
-### Loss Clipping (YES)
-Gradient is clipped to 1 & -1
+### Loss Clipping (NO)
+No Gradient clipping present
 '''
 
 import numpy as np
@@ -31,13 +30,12 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 
-BUFFER_SIZE = int(1e5)  # replay buffer size
-BATCH_SIZE = 64         # minibatch size
+BUFFER_SIZE = 1         # replay buffer size
+BATCH_SIZE = 1          # minibatch size
 GAMMA = 0.99            # discount factor
 TAU = 1                 # for soft update of target parameters
 LR = 5e-4               # learning rate 
-''' Property - Q Targets (+Q)'''
-UPDATE_EVERY = 10        # how often to update the network
+UPDATE_EVERY = 1        # how often to update the network
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -67,6 +65,7 @@ class QNetwork(nn.Module):
         return self.fc3(x)
 
 
+
 class Agent():
     """Interacts with and learns from the environment."""
 
@@ -90,9 +89,11 @@ class Agent():
 
         # Replay memory
         self.memory = ReplayBuffer(action_size, BUFFER_SIZE, BATCH_SIZE, seed)
+        '''
         # Initialize time step (for updating every UPDATE_EVERY steps)
         self.t_step = 0
-    
+        '''
+
     def step(self, state, action, reward, next_state, done):
         # Save experience in replay memory
         self.memory.add(state, action, reward, next_state, done)
@@ -102,13 +103,15 @@ class Agent():
             experiences = self.memory.sample()
             self.learn(experiences, GAMMA)
         
+                # ------------------- update target network ------------------- #
+        self.soft_update(self.qnetwork_local, self.qnetwork_target, TAU)  
+
+        '''
         self.t_step = (self.t_step + 1) % UPDATE_EVERY
         if self.t_step == 0:
                     # ------------------- update target network ------------------- #
-
-                
             self.soft_update(self.qnetwork_local, self.qnetwork_target, TAU)   
-            
+        ''' 
 
 
     def act(self, state, eps=0.):
@@ -157,12 +160,15 @@ class Agent():
         loss.backward()
         
         #Gradiant Clipping
-        ''' Property - Truncation (+T)'''
-        for param in self.qnetwork_local.parameters():
+        '''
+        for param in self.qnetwork_localparameters():
             param.grad.data.clamp_(-1, 1)
-            
+           
+        '''
         self.optimizer.step()
-                  
+        
+                   
+
     def soft_update(self, local_model, target_model, tau):
         """Soft update model parameters.
         θ_target = τ*θ_local + (1 - τ)*θ_target
@@ -172,10 +178,10 @@ class Agent():
             local_model (PyTorch model): weights will be copied from
             target_model (PyTorch model): weights will be copied to
             tau (float): interpolation parameter 
-          
-        """  
+        """
         for target_param, local_param in zip(target_model.parameters(), local_model.parameters()):
             target_param.data.copy_(tau*local_param.data + (1.0-tau)*target_param.data)
+
 
 class ReplayBuffer:
     """Fixed-size buffer to store experience tuples."""
@@ -216,6 +222,4 @@ class ReplayBuffer:
     def __len__(self):
         """Return the current size of internal memory."""
         return len(self.memory)
-
-
 
