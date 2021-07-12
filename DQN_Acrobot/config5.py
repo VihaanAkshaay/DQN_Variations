@@ -43,7 +43,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 class QNetwork(nn.Module):
     """Actor (Policy) Model."""
 
-    def __init__(self, state_size, action_size, seed, fc1_units=64, fc2_units=64):
+    def __init__(self, state_size, action_size, seed, fc1_units=128, fc2_units=64):
         """Initialize parameters and build model.
         Params
         ======
